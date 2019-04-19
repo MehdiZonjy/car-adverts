@@ -10,7 +10,7 @@ import scala.language.implicitConversions
 
 
 
-case class CreateUsedCarAdvert(title: String, fuel: Fuel, price: Int,  mileage: Int, firstRegisteration: LocalDate)
+  case class CreateUsedCarAdvert(title: String, fuel: Fuel, price: Int,  mileage: Int, firstRegisteration: LocalDate)
 case class CreateNewCarAdvert(title: String, fuel: Fuel, price: Int)
 
 
