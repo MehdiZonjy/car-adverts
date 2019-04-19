@@ -1,11 +1,14 @@
 package models.cardadvert
 
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 import play.api.data.FormError
 import play.api.data.format.Formatter
-import play.api.libs.json.{Json, Writes}
-
+import play.api.libs.json._
+import play.api.libs.json.Reads._
+import play.api.libs.functional.syntax._ // Combinator syntax
+import utils.Date._
 
 sealed case class Fuel(value: String)
 
@@ -22,6 +25,9 @@ object Fuel {
     case _ => None
   }
 
+  implicit val fuelReads = new Reads[Fuel] {
+    override def reads(json: JsValue): JsResult[Fuel] = json.asOpt[String].flatMap(fromString).map( f => JsSuccess(f)).getOrElse(JsError("Invalid Fuel Type"))
+  }
 
 
 }
@@ -47,6 +53,13 @@ object NewCarAdvert {
       "new" -> true
     )
   }
+
+  implicit val newCarReads = (
+    (JsPath \ "id").read[String] and
+    (JsPath \ "title").read[String] and
+    (JsPath \ "fuel").read[Fuel] and
+    (JsPath \ "price").read[Int]
+  )(NewCarAdvert.apply _)
 }
 
 object UsedCarAdvert {
@@ -57,10 +70,21 @@ object UsedCarAdvert {
       "fuel" -> car.fuel.value,
       "price" -> car.price,
       "mileage" -> car.mileage,
-      "firstRegisteration" -> car.firstRegisteration.toString,
+      "firstRegisteration" -> dateToStr(car.firstRegisteration),
       "new" -> false
     )
   }
+
+
+
+  implicit val usedCarAdvert = (
+    (JsPath \ "id").read[String] and
+      (JsPath \ "title").read[String] and
+      (JsPath \ "fuel").read[Fuel] and
+      (JsPath \ "price").read[Int] and
+      (JsPath \ "mileage").read[Int] and
+      (JsPath \ "firstRegisteration").read[LocalDate]
+    )(UsedCarAdvert.apply _)
 }
 
 object CarAdvert {
@@ -69,5 +93,17 @@ object CarAdvert {
       case newCar:NewCarAdvert => NewCarAdvert.newCarWrites.writes(newCar)
       case usedCar: UsedCarAdvert => UsedCarAdvert.usedCardWrites.writes(usedCar)
     }
+  }
+
+  implicit val carAdvertReads = new Reads[CarAdvert] {
+    override def reads(json: JsValue): JsResult[CarAdvert] ={
+      val res = for {
+        obj <- json.validate[JsObject]
+        isNew <- (obj \ "new").validate[Boolean]
+      } yield if (isNew) obj.validate[NewCarAdvert] else obj.validate[UsedCarAdvert]
+
+      res.flatMap(identity)
+    }
+
   }
 }

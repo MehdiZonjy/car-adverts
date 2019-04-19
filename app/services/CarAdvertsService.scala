@@ -41,7 +41,7 @@ class CarAdvertsService @Inject()(carAdvertsRepository: CarAdvertsRepository){
 
   def list(): IO[Iterable[CarAdvert]] = carAdvertsRepository.list
 
-  def create(cmd: CreateNewCarAdvert): IO[CarAdvert] = carAdvertsRepository.create(cmd)
-  def create(cmd: CreateUsedCarAdvert): IO[CarAdvert] = carAdvertsRepository.create(cmd)
+  def create(cmd: CreateNewCarAdvert): IO[Option[CarAdvert]] = carAdvertsRepository.create(cmd)
+  def create(cmd: CreateUsedCarAdvert): IO[Option[CarAdvert]] = carAdvertsRepository.create(cmd)
 
 }

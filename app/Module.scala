@@ -1,6 +1,6 @@
 import javax.inject._
 import com.google.inject.AbstractModule
-import infra.repositories.{CarAdvertsRepository, InMemoryCarAdvertsRepository}
+import infra.repositories.{CarAdvertsRepository, DynamodbCarAdvertsRepository, InMemoryCarAdvertsRepository}
 import net.codingwell.scalaguice.ScalaModule
 import play.api.{Configuration, Environment}
 
@@ -14,6 +14,7 @@ class Module(environment: Environment, configuration: Configuration)
     with ScalaModule {
 
   override def configure() = {
-    bind[CarAdvertsRepository].to[InMemoryCarAdvertsRepository].in[Singleton]
+//    bind[CarAdvertsRepository].to[InMemoryCarAdvertsRepository].in[Singleton]
+    bind[CarAdvertsRepository].toInstance(new DynamodbCarAdvertsRepository("us-east-1","http://localhost:4569","key","secret"))
   }
 }
