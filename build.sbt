@@ -21,6 +21,9 @@ libraryDependencies += "io.gatling" % "gatling-test-framework" % "3.0.1.1" % Tes
 libraryDependencies += "org.typelevel" %% "cats-core" % "1.6.0"
 libraryDependencies += "org.typelevel" %% "cats-effect" % "1.2.0"
 libraryDependencies += "org.typelevel" %% "cats-mtl-core" % "0.5.0"
+libraryDependencies += "org.scanamo" %% "scanamo" % "1.0.0-M9"
+//libraryDependencies += "com.gu" %% "scanamo-alpakka" % "1.0.0-M8"
+libraryDependencies += "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.537"
 
 
 // The Play project itself
