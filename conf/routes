@@ -1,3 +1,4 @@
 GET         /v1/hello  controllers.CarAdvertsController.hello()
 GET         /v1/caradverts controllers.CarAdvertsController.list()
 POST        /v1/caradverts/newadvert controllers.CarAdvertsController.createNewAdvert()
+POST        /v1/caradverts/usedadvert controllers.CarAdvertsController.createUsedAdvert()
