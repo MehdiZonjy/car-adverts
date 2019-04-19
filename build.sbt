@@ -3,6 +3,9 @@ import sbt.Keys._
 
 lazy val GatlingTest = config("gatling") extend Test
 
+scalacOptions += "-Ypartial-unification"
+
+
 scalaVersion in ThisBuild := "2.12.7"
 
 libraryDependencies += guice
@@ -15,6 +18,10 @@ libraryDependencies += "net.codingwell" %% "scala-guice" % "4.2.1"
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % Test
 libraryDependencies += "io.gatling.highcharts" % "gatling-charts-highcharts" % "3.0.1.1" % Test
 libraryDependencies += "io.gatling" % "gatling-test-framework" % "3.0.1.1" % Test
+libraryDependencies += "org.typelevel" %% "cats-core" % "1.6.0"
+libraryDependencies += "org.typelevel" %% "cats-effect" % "1.2.0"
+libraryDependencies += "org.typelevel" %% "cats-mtl-core" % "0.5.0"
+
 
 // The Play project itself
 lazy val root = (project in file("."))
