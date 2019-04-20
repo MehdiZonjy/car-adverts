@@ -1,14 +1,13 @@
 package infra.repositories
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+
 import java.util.UUID
 
-
 import cats.effect.IO
+import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.client.builder.AwsClientBuilder
-import com.amazonaws.services.dynamodbv2.{ AmazonDynamoDBAsyncClientBuilder}
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
 import javax.inject.{Inject, Singleton}
 import models.cardadvert.{CarAdvert, Fuel, NewCarAdvert, UsedCarAdvert}
 
@@ -17,8 +16,9 @@ import scala.collection.mutable.Map
 import scala.concurrent.ExecutionContext
 import org.scanamo._
 import org.scanamo.syntax._
-import org.scanamo.error.DynamoReadError
+import org.scanamo.error.{DynamoReadError, ScanamoError}
 import play.api.Logger
+
 import scala.language.implicitConversions
 import utils.Date._
 
@@ -45,6 +45,7 @@ trait CarAdvertsRepository {
   def get(id: String): IO[Option[CarAdvert]]
 
   def create(carAdvert: CarAdvert): IO[Option[CarAdvert]]
+  def update(carAdvert: CarAdvert): IO[Option[CarAdvert]]
 }
 
 
@@ -68,29 +69,48 @@ class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: Strin
 
   val creds = new AWSStaticCredentialsProvider(new BasicAWSCredentials(key, secret))
   val client = AmazonDynamoDBAsyncClientBuilder.standard()
-    .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(hostEndpoint, region))
+    .withClientConfiguration(
+      new ClientConfiguration()
+        .withMaxErrorRetry(0)
+        .withConnectionTimeout(3000))    .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(hostEndpoint, region))
     .withCredentials(creds).build()
   val table = Table[CarAdvertEntity]("carAdverts")
 
 
-  def unwrapEither[T](iter: List[Either[DynamoReadError, T]]): List[T] = iter.foldRight(List[T]())((either, acc) => either match {
+  def unwrapEithers[T](iter: List[Either[DynamoReadError, T]]): List[T] = iter.foldRight(List[T]())((either, acc) => either match {
     case Left(err) => logger.warn("Failed to parse Rec from DB" + err)
       acc
     case Right(t) => t :: acc
   })
 
+  def unwrapOption[T](wrapper: Option[Either[DynamoReadError, T]]): Option[T] = wrapper.flatMap {
+    case Right(t) => Some(t)
+    case Left(err) => logger.warn("Failed to parse Rec from db" + err)
+                      None
+  }
+
+  def unwrapEither[T](eth: Either[ScanamoError, T]): Option[T] = eth match {
+    case Right(t) => Some(t)
+    case Left(err) => logger.error("ScanamoError" + err)
+                      None
+  }
 
 
 
   override def list() = IO.fromFuture(IO.pure {
     val ops = for {
-      adverts <- table.scan.map(unwrapEither)
+      adverts <- table.scan.map(unwrapEithers)
     } yield adverts.map(CarAdvertEntity.toCarAdvert).flatten.toIterable
 
     ScanamoAsync.exec(client)(ops)
   })
 
-  override def get(id: String): IO[Option[CarAdvert]] = ???
+  override def get(id: String): IO[Option[CarAdvert]] = IO.fromFuture(IO.pure{
+    val ops = for {
+      advert <- table.get('id -> id)
+    } yield unwrapOption(advert).flatMap(CarAdvertEntity.toCarAdvert)
+    ScanamoAsync.exec(client)(ops)
+  })
 
   override def create(carAdvert: CarAdvert) = IO.fromFuture(IO.pure {
     val (_, car) = Utils.generateRandomId(carAdvert)
@@ -98,6 +118,19 @@ class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: Strin
       res <- table.given(not(attributeExists('id))).put(CarAdvertEntity.fromCarAdvert(car))
     } yield res.toOption.map(_ => car)
 
+    ScanamoAsync.exec(client)(ops)
+  })
+
+  override def update(carAdvert: CarAdvert) = IO.fromFuture(IO.pure{
+    val entity = CarAdvertEntity.fromCarAdvert(carAdvert)
+    val ops = for {
+      res <- table.given(attributeExists('id)).update('id -> entity.id,
+        set('title -> entity.title) and
+        set('fuel -> entity.fuel) and
+        set('price -> entity.price) and
+        set('mileage -> entity.mileage) and
+        set('firstRegisteration -> entity.firstRegisteration))
+    }yield unwrapEither(res).flatMap(CarAdvertEntity.toCarAdvert)
     ScanamoAsync.exec(client)(ops)
   })
 }
@@ -125,5 +158,6 @@ class InMemoryCarAdvertsRepository @Inject()()(implicit ex: ExecutionContext) ex
   //  override def delete(id: String): Future[Boolean] = ???
   //
   //  override def update(carAdvert: CarAdvert): Future[CarAdvert] = ???
+  override def update(carAdvert: CarAdvert): IO[Option[CarAdvert]] = ???
 }
 

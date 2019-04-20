@@ -6,9 +6,9 @@ import java.time.format.DateTimeFormatter
 import models.cardadvert.Fuel
 import org.scalatestplus.play.PlaySpec
 import services.{CreateNewCarAdvert, CreateUsedCarAdvert}
-import validators.CreateCarAdvertValidator.{newCarAdvertForm, usedCarAdvertForm}
+import validators.CarAdvertValidator.{newCarAdvertForm, usedCarAdvertForm}
 
-class CreateCarAdvertValidatorSpec extends PlaySpec{
+class CarAdvertValidatorSpec extends PlaySpec{
 
   "CreateNewCarAdvert Form Validator" must {
     "Fail when price is not numeric" in {

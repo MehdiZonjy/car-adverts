@@ -15,6 +15,6 @@ class Module(environment: Environment, configuration: Configuration)
 
   override def configure() = {
 //    bind[CarAdvertsRepository].to[InMemoryCarAdvertsRepository].in[Singleton]
-    bind[CarAdvertsRepository].toInstance(new DynamodbCarAdvertsRepository("us-east-1","http://localhost:4569","key","secret"))
+    bind[CarAdvertsRepository].toInstance(new DynamodbCarAdvertsRepository("us-east-1","http://localhost:8000","key","secret"))
   }
 }

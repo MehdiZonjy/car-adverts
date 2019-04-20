@@ -4,11 +4,11 @@ import models.cardadvert.Fuel
 import models.cardadvert.Fuel._
 import play.api.data.{Form, FormError}
 import play.api.data.format.Formatter
-import services.{CreateNewCarAdvert, CreateUsedCarAdvert}
+import services.{CreateNewCarAdvert, CreateUsedCarAdvert, UpdateCarAdvert}
 
 
 
-object CreateCarAdvertValidator {
+object CarAdvertValidator {
   import play.api.data.Forms._
 
   implicit val fuelFormatter = new Formatter[Fuel] {
@@ -39,6 +39,18 @@ object CreateCarAdvertValidator {
         "firstRegisteration" -> localDate("dd-MM-yyyy")
       )(CreateUsedCarAdvert.apply)(CreateUsedCarAdvert.unapply)
     )
+  }
+
+
+  val updateCarAdvertForm: Form[UpdateCarAdvert] = {
+    Form(
+      mapping(
+        "title" -> optional(nonEmptyText),
+        "fuel" -> optional(of[Fuel]),
+        "price" -> optional(number(min = 1)),
+        "mileage" -> optional(number),
+        "firstRegisteration" -> optional(localDate("dd-MM-yyyy"))
+      )(UpdateCarAdvert.apply)(UpdateCarAdvert.unapply))
   }
 
 }
