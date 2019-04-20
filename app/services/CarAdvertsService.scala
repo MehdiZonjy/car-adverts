@@ -72,6 +72,15 @@ object CarAdvertOrderBy {
     }
   }
 
+  object New extends CarAdvertOrderBy {
+    override def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean = (a1, a2) match {
+      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.id < a2.id
+      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.id < a2.id
+      case (a1: NewCarAdvert, a2: UsedCarAdvert) => true
+      case (a1: UsedCarAdvert, a2: NewCarAdvert) => false
+    }
+  }
+
   def fromString (str: String) : Option[CarAdvertOrderBy] = str.toLowerCase match {
     case "id" => Some(Id)
     case "title" => Some(Title)
@@ -79,6 +88,7 @@ object CarAdvertOrderBy {
     case "price" => Some(Price)
     case "mileage" => Some(Mileage)
     case "firstregistration" => Some(FirstRegistration)
+    case "new" => Some(New)
     case _ => None
   }
 }
@@ -93,7 +103,7 @@ class CarAdvertsService @Inject()(carAdvertsRepository: CarAdvertsRepository){
   def get(id: String): IO[Option[CarAdvert]] = carAdvertsRepository.get(id)
 
 
-  def list(query: QueryCarAdverts): IO[Iterable[CarAdvert]] = carAdvertsRepository.list.map(_.sortWith(query.orderBy.lessThan))
+  def list(query: QueryCarAdverts): IO[List[CarAdvert]] = carAdvertsRepository.list.map(_.sortWith(query.orderBy.lessThan))
 
 
   def create(cmd: CreateNewCarAdvert): IO[Option[CarAdvert]] = carAdvertsRepository.create(cmd)

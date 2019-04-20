@@ -1,7 +1,6 @@
 package validators
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 import models.cardadvert.Fuel
 import org.scalatestplus.play.PlaySpec
