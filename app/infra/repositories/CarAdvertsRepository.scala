@@ -24,23 +24,23 @@ import utils.Date._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-case class CarAdvertEntity(id: String, title: String, fuel: Fuel, price: Int, mileage: Option[Int], firstRegisteration: Option[String], used: Boolean, version: Int)
+case class CarAdvertEntity(id: String, title: String, fuel: Fuel, price: Int, mileage: Option[Int], firstRegistration: Option[String], used: Boolean, version: Int)
 object CarAdvertEntity {
   def toCarAdvert(entity: CarAdvertEntity): Option[CarAdvert] = entity match {
-    case CarAdvertEntity(id, title, fuel, price, Some(mileage), Some(firstRegisteration), true, _) => Some(UsedCarAdvert(id, title, fuel, price, mileage, strToDate(firstRegisteration)))
+    case CarAdvertEntity(id, title, fuel, price, Some(mileage), Some(firstRegistration), true, _) => strToDate(firstRegistration).map(UsedCarAdvert(id, title, fuel, price, mileage, _))
     case CarAdvertEntity(id, title, fuel, price, _, _, false, _) => Some(NewCarAdvert(id, title, fuel, price))
     case _ => None
   }
 
   def fromCarAdvert(carAdvert: CarAdvert): CarAdvertEntity = carAdvert match {
     case NewCarAdvert(id, title, fuel, price) => CarAdvertEntity(id, title, fuel, price, None, None, false, 1)
-    case UsedCarAdvert(id, title, fuel, price, mileage, firstRegisteration) => CarAdvertEntity(id, title, fuel, price, Some(mileage), Some(dateToStr(firstRegisteration)), true, 1)
+    case UsedCarAdvert(id, title, fuel, price, mileage, firstRegistration) => CarAdvertEntity(id, title, fuel, price, Some(mileage), Some(dateToStr(firstRegistration)), true, 1)
   }
 
 }
 
 trait CarAdvertsRepository {
-  def list(): IO[Iterable[CarAdvert]]
+  def list(): IO[List[CarAdvert]]
 
   def get(id: String): IO[Option[CarAdvert]]
 
@@ -102,7 +102,7 @@ class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: Strin
   override def list() = IO.fromFuture(IO.pure {
     val ops = for {
       adverts <- table.scan.map(unwrapEithers)
-    } yield adverts.map(CarAdvertEntity.toCarAdvert).flatten.toIterable
+    } yield adverts.map(CarAdvertEntity.toCarAdvert).flatten
 
     ScanamoAsync.exec(client)(ops)
   })
@@ -131,7 +131,7 @@ class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: Strin
         set('fuel -> entity.fuel) and
         set('price -> entity.price) and
         set('mileage -> entity.mileage) and
-        set('firstRegisteration -> entity.firstRegisteration))
+        set('firstRegisteration -> entity.firstRegistration))
     } yield unwrapEither(res).flatMap(CarAdvertEntity.toCarAdvert)
     ScanamoAsync.exec(client)(ops)
   })
@@ -151,8 +151,8 @@ class InMemoryCarAdvertsRepository @Inject()()(implicit ex: ExecutionContext) ex
 
   var storage: Map[String, CarAdvert] = new mutable.HashMap[String, CarAdvert]()
 
-  override def list(): IO[Iterable[CarAdvert]] = IO {
-    storage.values
+  override def list(): IO[List[CarAdvert]] = IO {
+    storage.values.toList
   }
 
   override def get(id: String): IO[Option[CarAdvert]] = IO {

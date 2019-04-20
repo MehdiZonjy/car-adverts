@@ -1,7 +1,6 @@
 package validators
 
 import models.cardadvert.Fuel
-import models.cardadvert.Fuel._
 import play.api.data.{Form, FormError}
 import play.api.data.format.Formatter
 import services.{CreateNewCarAdvert, CreateUsedCarAdvert, UpdateCarAdvert}
@@ -13,7 +12,7 @@ object CarAdvertValidator {
 
   implicit val fuelFormatter = new Formatter[Fuel] {
     override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Fuel] =
-      data.get(key).flatMap(fromString).toRight(Seq(FormError(key, "can only be gasoline or diesel")))
+      data.get(key).flatMap(Fuel.fromString).toRight(Seq(FormError(key, "can only be gasoline or diesel")))
 
     override def unbind(key: String, value: Fuel): Map[String, String] = Map(key -> value.value)
   }
@@ -36,7 +35,7 @@ object CarAdvertValidator {
         "fuel" -> of[Fuel],
         "price" -> number(min = 1),
         "mileage" -> number,
-        "firstRegisteration" -> localDate("dd-MM-yyyy")
+        "firstRegisteration" -> localDate("yyyy-MM-dd")
       )(CreateUsedCarAdvert.apply)(CreateUsedCarAdvert.unapply)
     )
   }
@@ -49,8 +48,7 @@ object CarAdvertValidator {
         "fuel" -> optional(of[Fuel]),
         "price" -> optional(number(min = 1)),
         "mileage" -> optional(number),
-        "firstRegisteration" -> optional(localDate("dd-MM-yyyy"))
+        "firstRegisteration" -> optional(localDate("yyyy-MM-dd"))
       )(UpdateCarAdvert.apply)(UpdateCarAdvert.unapply))
   }
-
 }

@@ -51,7 +51,7 @@ class CarAdvertsServiceSpec extends PlaySpec with MockitoSugar{
       val repo = mock[CarAdvertsRepository]
 
       val createUsedCarAdvert = CreateUsedCarAdvert("title1", Fuel.Diesel, 900, 200, LocalDate.now())
-      val newCarAdvert = UsedCarAdvert("", createUsedCarAdvert.title, createUsedCarAdvert.fuel, createUsedCarAdvert.price, createUsedCarAdvert.mileage,createUsedCarAdvert.firstRegisteration)
+      val newCarAdvert = UsedCarAdvert("", createUsedCarAdvert.title, createUsedCarAdvert.fuel, createUsedCarAdvert.price, createUsedCarAdvert.mileage,createUsedCarAdvert.firstRegistration)
 
       when(repo.create(newCarAdvert)) thenReturn(IO.pure(Some(newCarAdvert)))
 

@@ -55,7 +55,7 @@ class CarAdvertValidatorSpec extends PlaySpec{
         "title" -> expectedCmd.title,
         "fuel" -> expectedCmd.fuel.value,
         "mileage" -> expectedCmd.mileage.toString,
-        "firstRegisteration" -> expectedCmd.firstRegisteration.format( DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+        "firstRegisteration" -> expectedCmd.firstRegistration.format( DateTimeFormatter.ofPattern("dd-MM-yyyy"))
       )).get
 
       createUsedCarAdvert mustEqual expectedCmd
@@ -83,7 +83,7 @@ class CarAdvertValidatorSpec extends PlaySpec{
         "fuel" -> expectedCmd.fuel.get.value,
         "price" -> expectedCmd.price.get.toString,
         "mileage" -> expectedCmd.mileage.get.toString,
-        "firstRegisteration" -> expectedCmd.firstRegisteration.get.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+        "firstRegisteration" -> expectedCmd.firstRegistration.get.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
       )).get
 
       cmd mustEqual expectedCmd

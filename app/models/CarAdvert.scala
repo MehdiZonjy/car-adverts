@@ -7,7 +7,7 @@ import play.api.data.FormError
 import play.api.data.format.Formatter
 import play.api.libs.json._
 import play.api.libs.json.Reads._
-import play.api.libs.functional.syntax._ // Combinator syntax
+import play.api.libs.functional.syntax._
 import utils.Date._
 
 sealed case class Fuel(value: String)
@@ -39,13 +39,13 @@ sealed trait CarAdvert
 // I find that using an explicit ADT(CarAdvert) with a sum type helps in expressing the domain model via the type system better
 case class NewCarAdvert(id: String, title: String, fuel: Fuel, price: Int) extends  CarAdvert
 
-case class UsedCarAdvert(id: String, title: String, fuel: Fuel, price: Int, mileage: Int, firstRegisteration: LocalDate) extends CarAdvert
+case class UsedCarAdvert(id: String, title: String, fuel: Fuel, price: Int, mileage: Int, firstRegistration: LocalDate) extends CarAdvert
 
 
 
 object NewCarAdvert {
   implicit val newCarWrites = new Writes[NewCarAdvert] {
-    def writes(car: NewCarAdvert) = Json.obj(
+    def writes(car: NewCarAdvert): JsObject = Json.obj(
       "id" -> car.id,
       "title" -> car.title,
       "fuel" -> car.fuel.value,
@@ -64,13 +64,13 @@ object NewCarAdvert {
 
 object UsedCarAdvert {
   implicit val usedCardWrites = new Writes[UsedCarAdvert] {
-    def writes(car: UsedCarAdvert) = Json.obj(
+    def writes(car: UsedCarAdvert): JsObject = Json.obj(
       "id" -> car.id,
       "title" -> car.title,
       "fuel" -> car.fuel.value,
       "price" -> car.price,
       "mileage" -> car.mileage,
-      "firstRegisteration" -> dateToStr(car.firstRegisteration),
+      "firstRegistration" -> dateToStr(car.firstRegistration),
       "new" -> false
     )
   }
@@ -83,13 +83,13 @@ object UsedCarAdvert {
       (JsPath \ "fuel").read[Fuel] and
       (JsPath \ "price").read[Int] and
       (JsPath \ "mileage").read[Int] and
-      (JsPath \ "firstRegisteration").read[LocalDate]
+      (JsPath \ "firstRegistration").read[LocalDate]
     )(UsedCarAdvert.apply _)
 }
 
 object CarAdvert {
   implicit  val carAdvertWrites = new Writes[CarAdvert] {
-    def writes(car: CarAdvert) = car match {
+    def writes(car: CarAdvert): JsObject = car match {
       case newCar:NewCarAdvert => NewCarAdvert.newCarWrites.writes(newCar)
       case usedCar: UsedCarAdvert => UsedCarAdvert.usedCardWrites.writes(usedCar)
     }

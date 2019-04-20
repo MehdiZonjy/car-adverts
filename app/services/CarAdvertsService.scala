@@ -12,24 +12,88 @@ import scala.language.implicitConversions
 
 
 
-case class CreateUsedCarAdvert(title: String, fuel: Fuel, price: Int,  mileage: Int, firstRegisteration: LocalDate)
+case class CreateUsedCarAdvert(title: String, fuel: Fuel, price: Int, mileage: Int, firstRegistration: LocalDate)
 case class CreateNewCarAdvert(title: String, fuel: Fuel, price: Int)
-case class UpdateCarAdvert(title: Option[String], fuel: Option[Fuel], price: Option[Int], mileage: Option[Int], firstRegisteration: Option[LocalDate])
+case class UpdateCarAdvert(title: Option[String], fuel: Option[Fuel], price: Option[Int], mileage: Option[Int], firstRegistration: Option[LocalDate])
+case class QueryCarAdverts(orderBy: CarAdvertOrderBy)
 
-trait CarAdvertError
-case class CarAlreadyExists(id: String) extends CarAdvertError
-case class CarNotFound(id: String) extends CarAdvertError
+
+trait CarAdvertOrderBy {
+  def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean
+}
+object CarAdvertOrderBy {
+  object Id extends CarAdvertOrderBy{
+    override def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean = (a1,a2) match {
+      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.id < a2.id
+      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.id < a2.id
+      case (a1: NewCarAdvert, a2: UsedCarAdvert) => a1.id < a2.id
+      case (a1: UsedCarAdvert, a2: NewCarAdvert) => a1.id < a2.id
+    }
+  }
+
+  object Title extends CarAdvertOrderBy {
+    override def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean = (a1, a2) match {
+      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.title < a2.title
+      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.title < a2.title
+      case (a1: NewCarAdvert, a2: UsedCarAdvert) => a1.title < a2.title
+      case (a1: UsedCarAdvert, a2: NewCarAdvert) => a1.title < a2.title
+    }
+  }
+  object Fuel extends CarAdvertOrderBy {
+    override def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean = (a1, a2) match {
+      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.fuel.value < a2.fuel.value
+      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.fuel.value < a2.fuel.value
+      case (a1: NewCarAdvert, a2: UsedCarAdvert) => a1.fuel.value < a2.fuel.value
+      case (a1: UsedCarAdvert, a2: NewCarAdvert) => a1.fuel.value < a2.fuel.value
+    }
+  }
+  object Price extends CarAdvertOrderBy {
+    override def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean = (a1, a2) match {
+      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.price < a2.price
+      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.price < a2.price
+      case (a1: NewCarAdvert, a2: UsedCarAdvert) => a1.price < a2.price
+      case (a1: UsedCarAdvert, a2: NewCarAdvert) => a1.price < a2.price
+    }
+  }
+  object Mileage extends CarAdvertOrderBy {
+    override def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean = (a1, a2) match {
+      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.id < a2.id
+      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.mileage < a2.mileage
+      case (a1: NewCarAdvert, a2: UsedCarAdvert) => true
+      case (a1: UsedCarAdvert, a2: NewCarAdvert) => false
+    }
+  }
+  object FirstRegistration extends CarAdvertOrderBy {
+    override def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean = (a1, a2) match {
+      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.id < a2.id
+      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.firstRegistration.compareTo(a2.firstRegistration) <=0
+      case (a1: NewCarAdvert, a2: UsedCarAdvert) => true
+      case (a1: UsedCarAdvert, a2: NewCarAdvert) => false
+    }
+  }
+
+  def fromString (str: String) : Option[CarAdvertOrderBy] = str.toLowerCase match {
+    case "id" => Some(Id)
+    case "title" => Some(Title)
+    case "fuel" => Some(Fuel)
+    case "price" => Some(Price)
+    case "mileage" => Some(Mileage)
+    case "firstregistration" => Some(FirstRegistration)
+    case _ => None
+  }
+}
+
 
 @Singleton
 class CarAdvertsService @Inject()(carAdvertsRepository: CarAdvertsRepository){
 
-  private implicit def cmdToCarAdvert(createUsedCar: CreateUsedCarAdvert): CarAdvert = UsedCarAdvert("", createUsedCar.title, createUsedCar.fuel, createUsedCar.price, createUsedCar.mileage, createUsedCar.firstRegisteration)
+  private implicit def cmdToCarAdvert(createUsedCar: CreateUsedCarAdvert): CarAdvert = UsedCarAdvert("", createUsedCar.title, createUsedCar.fuel, createUsedCar.price, createUsedCar.mileage, createUsedCar.firstRegistration)
   private implicit def cmdToCarAdvert(createNewCar: CreateNewCarAdvert): CarAdvert = NewCarAdvert("", createNewCar.title, createNewCar.fuel, createNewCar.price)
 
   def get(id: String): IO[Option[CarAdvert]] = carAdvertsRepository.get(id)
 
 
-  def list(): IO[Iterable[CarAdvert]] = carAdvertsRepository.list
+  def list(query: QueryCarAdverts): IO[Iterable[CarAdvert]] = carAdvertsRepository.list.map(_.sortWith(query.orderBy.lessThan))
 
 
   def create(cmd: CreateNewCarAdvert): IO[Option[CarAdvert]] = carAdvertsRepository.create(cmd)
@@ -46,7 +110,7 @@ class CarAdvertsService @Inject()(carAdvertsRepository: CarAdvertsRepository){
                                                                                 updateCmd.fuel.getOrElse(fuel),
                                                                                 updateCmd.price.getOrElse(price),
                                                                                 updateCmd.mileage.getOrElse(mileage),
-                                                                                updateCmd.firstRegisteration.getOrElse(firstRegisteration))
+                                                                                updateCmd.firstRegistration.getOrElse(firstRegisteration))
 
   }
 

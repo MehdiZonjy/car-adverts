@@ -7,7 +7,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.ControllerComponents
 import play.api.libs.json.Json
 import play.api.mvc._
-import services.{CarAdvertsService, CreateNewCarAdvert, CreateUsedCarAdvert, UpdateCarAdvert}
+import services._
 import validators.CarAdvertValidator
 
 class CarAdvertsController @Inject()(cc: ControllerComponents, carAdvertsService: CarAdvertsService) extends AbstractController(cc) with I18nSupport {
@@ -17,8 +17,8 @@ class CarAdvertsController @Inject()(cc: ControllerComponents, carAdvertsService
     Ok("Hello World")
   }
 
-  def list = Action{
-    carAdvertsService.list().attempt.unsafeRunSync() match {
+  def list(orderBy: String) = Action{
+    carAdvertsService.list(QueryCarAdverts(CarAdvertOrderBy.fromString(orderBy).getOrElse(CarAdvertOrderBy.Id))).attempt.unsafeRunSync() match {
       case Right(adverts) =>  Ok(Json.toJson(adverts))
       case Left(err) => logger.error("Failed to fetch adverts list",err)
                         ServiceUnavailable
@@ -28,7 +28,7 @@ class CarAdvertsController @Inject()(cc: ControllerComponents, carAdvertsService
   def createNewAdvert = Action {
     implicit request =>
 
-    def create(cmd: CreateNewCarAdvert) = carAdvertsService.create(cmd).attempt.unsafeRunSync match {
+    def execCmd(cmd: CreateNewCarAdvert) = carAdvertsService.create(cmd).attempt.unsafeRunSync match {
       case Right(Some(advert)) => Created(Json.toJson(advert))
       case Right(None) => Conflict("Unable to create NewCarAdvert due to id collision, try again")
       case Left(err) => logger.error("Failed to create newCarAdvert", err)
@@ -37,14 +37,14 @@ class CarAdvertsController @Inject()(cc: ControllerComponents, carAdvertsService
 
     CarAdvertValidator.newCarAdvertForm.bindFromRequest().fold(
       badForm => BadRequest(badForm.errorsAsJson),
-      cmd => create(cmd)
+      cmd => execCmd(cmd)
     )
   }
 
   def createUsedAdvert = Action {
     implicit request =>
 
-      def create(cmd: CreateUsedCarAdvert) = carAdvertsService.create(cmd).attempt.unsafeRunSync match {
+      def execCmd(cmd: CreateUsedCarAdvert) = carAdvertsService.create(cmd).attempt.unsafeRunSync match {
         case Right(Some(advert)) => Created(Json.toJson(advert))
         case Right(None) => Conflict("Unable to create UsedCarAdvert due to id collision, try again")
         case Left(err) => logger.error("Failed to create UsedCarAdvert", err)
@@ -53,7 +53,7 @@ class CarAdvertsController @Inject()(cc: ControllerComponents, carAdvertsService
 
       CarAdvertValidator.usedCarAdvertForm.bindFromRequest().fold(
         badForm => BadRequest(badForm.errorsAsJson),
-        cmd => create(cmd)
+        cmd => execCmd(cmd)
       )
   }
 
@@ -70,7 +70,7 @@ class CarAdvertsController @Inject()(cc: ControllerComponents, carAdvertsService
   def update(id: String) = Action {
     implicit request =>
 
-      def update(cmd: UpdateCarAdvert) = carAdvertsService.update(id, cmd).attempt.unsafeRunSync match {
+      def execCmd(cmd: UpdateCarAdvert) = carAdvertsService.update(id, cmd).attempt.unsafeRunSync match {
         case Right(None) => NotFound("Car advert not found")
         case Right(Some(advert)) => Ok(Json.toJson(advert))
         case Left(err) => logger.error("Failed to update advert", err)
@@ -78,7 +78,7 @@ class CarAdvertsController @Inject()(cc: ControllerComponents, carAdvertsService
       }
       CarAdvertValidator.updateCarAdvertForm.bindFromRequest().fold(
         badForm => BadRequest(badForm.errorsAsJson),
-        cmd => update(cmd)
+        cmd => execCmd(cmd)
       )
   }
 
