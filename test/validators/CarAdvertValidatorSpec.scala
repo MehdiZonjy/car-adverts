@@ -45,8 +45,8 @@ class CarAdvertValidatorSpec extends PlaySpec{
     "Fail when mileage is not numberic" in {
       usedCarAdvertForm.bind(Map("mileage" -> "Random")).error("mileage").isDefined mustBe true
     }
-    "Fail when firstRegisteration is not valid date format dd-mm-yyyy" in {
-      usedCarAdvertForm.bind(Map("firstRegisteration" -> "1990-09-07")).error("firstRegisteration").isDefined mustBe true
+    "Fail when firstRegisteration is not valid date format yyyy-MM-dd" in {
+      usedCarAdvertForm.bind(Map("firstRegisteration" -> "07-09-1990")).error("firstRegisteration").isDefined mustBe true
     }
     "Create a valid CreateUsedCarAdvert" in {
       val expectedCmd = CreateUsedCarAdvert("advert title", Fuel.Diesel, 90, 1000, LocalDate.now())
@@ -55,7 +55,7 @@ class CarAdvertValidatorSpec extends PlaySpec{
         "title" -> expectedCmd.title,
         "fuel" -> expectedCmd.fuel.value,
         "mileage" -> expectedCmd.mileage.toString,
-        "firstRegisteration" -> expectedCmd.firstRegistration.format( DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+        "firstRegisteration" -> utils.Date.dateToStr(expectedCmd.firstRegistration)
       )).get
 
       createUsedCarAdvert mustEqual expectedCmd
@@ -83,7 +83,7 @@ class CarAdvertValidatorSpec extends PlaySpec{
         "fuel" -> expectedCmd.fuel.get.value,
         "price" -> expectedCmd.price.get.toString,
         "mileage" -> expectedCmd.mileage.get.toString,
-        "firstRegisteration" -> expectedCmd.firstRegistration.get.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+        "firstRegisteration" -> utils.Date.dateToStr(expectedCmd.firstRegistration.get)
       )).get
 
       cmd mustEqual expectedCmd

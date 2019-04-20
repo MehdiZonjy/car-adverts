@@ -139,11 +139,11 @@ class CarAdvertsServiceSpec extends PlaySpec with MockitoSugar{
       val newFuel = Fuel.Gasoline
       val newPrice = 100
       val newMileage = 900
-      val newFirstRegisteration = utils.Date.strToDate("07-09-1990")
+      val newFirstRegisteration = utils.Date.strToDate("1990-09-07")
 
 
-      val cmd = UpdateCarAdvert(Some("title2"), Some(newFuel), Some(newPrice), Some(newMileage), Some(newFirstRegisteration))
-      val updatedCarAdvert = UsedCarAdvert(id, newTitle, newFuel, newPrice, newMileage, newFirstRegisteration)
+      val cmd = UpdateCarAdvert(Some("title2"), Some(newFuel), Some(newPrice), Some(newMileage), newFirstRegisteration)
+      val updatedCarAdvert = UsedCarAdvert(id, newTitle, newFuel, newPrice, newMileage, newFirstRegisteration.get)
 
       when(repo.get(id)) thenReturn(IO.pure(Some(oldAdvert)))
       when(repo.update(updatedCarAdvert)) thenReturn(IO.pure(Some(updatedCarAdvert)))
