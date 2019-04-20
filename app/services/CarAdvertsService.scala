@@ -23,8 +23,8 @@ case class CarNotFound(id: String) extends CarAdvertError
 @Singleton
 class CarAdvertsService @Inject()(carAdvertsRepository: CarAdvertsRepository){
 
-  implicit def cmdToCarAdvert(createUsedCar: CreateUsedCarAdvert): CarAdvert = UsedCarAdvert("", createUsedCar.title, createUsedCar.fuel, createUsedCar.price, createUsedCar.mileage, createUsedCar.firstRegisteration)
-  implicit def cmdToCarAdvert(createNewCar: CreateNewCarAdvert): CarAdvert = NewCarAdvert("", createNewCar.title, createNewCar.fuel, createNewCar.price)
+  private implicit def cmdToCarAdvert(createUsedCar: CreateUsedCarAdvert): CarAdvert = UsedCarAdvert("", createUsedCar.title, createUsedCar.fuel, createUsedCar.price, createUsedCar.mileage, createUsedCar.firstRegisteration)
+  private implicit def cmdToCarAdvert(createNewCar: CreateNewCarAdvert): CarAdvert = NewCarAdvert("", createNewCar.title, createNewCar.fuel, createNewCar.price)
 
   def get(id: String): IO[Option[CarAdvert]] = carAdvertsRepository.get(id)
 

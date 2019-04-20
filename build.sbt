@@ -24,6 +24,7 @@ libraryDependencies += "org.typelevel" %% "cats-mtl-core" % "0.5.0"
 libraryDependencies += "org.scanamo" %% "scanamo" % "1.0.0-M9"
 //libraryDependencies += "com.gu" %% "scanamo-alpakka" % "1.0.0-M8"
 libraryDependencies += "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.537"
+libraryDependencies += "org.mockito" % "mockito-core" % "2.27.0" % Test
 
 
 // The Play project itself

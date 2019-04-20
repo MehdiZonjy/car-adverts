@@ -5,8 +5,8 @@ import java.time.format.DateTimeFormatter
 
 import models.cardadvert.Fuel
 import org.scalatestplus.play.PlaySpec
-import services.{CreateNewCarAdvert, CreateUsedCarAdvert}
-import validators.CarAdvertValidator.{newCarAdvertForm, usedCarAdvertForm}
+import services.{CreateNewCarAdvert, CreateUsedCarAdvert, UpdateCarAdvert}
+import validators.CarAdvertValidator.{newCarAdvertForm, usedCarAdvertForm, updateCarAdvertForm}
 
 class CarAdvertValidatorSpec extends PlaySpec{
 
@@ -59,6 +59,34 @@ class CarAdvertValidatorSpec extends PlaySpec{
       )).get
 
       createUsedCarAdvert mustEqual expectedCmd
+    }
+  }
+
+  "UpdateCarAdvert Form Validator" must {
+    "Fail when price is not numeric" in {
+      updateCarAdvertForm.bind(Map("price" -> "Hello World")).error("price").isDefined mustBe true
+    }
+    "Fail when firstRegisteration format is not correct" in {
+      updateCarAdvertForm.bind(Map("firstRegisteration" -> "random")).error("firstRegisteration").isDefined mustBe true
+    }
+    "Fail when fuel type is not correct" in {
+      updateCarAdvertForm.bind(Map("fuel" -> "random")).error("fuel").isDefined mustBe true
+
+    }
+    "Create Optional fields for UpdateCarAdvert cmd" in {
+      updateCarAdvertForm.bind(Map[String,String]()).get mustEqual UpdateCarAdvert(None,None,None,None,None)
+    }
+    "Fill in provided fields for UpdateCarAdvert cmd" in {
+      val expectedCmd = UpdateCarAdvert(Some("advert title"), Some(Fuel.Diesel), Some(90), Some(1000), Some(LocalDate.now()))
+      val cmd =updateCarAdvertForm.bind(Map(
+        "title" -> expectedCmd.title.get,
+        "fuel" -> expectedCmd.fuel.get.value,
+        "price" -> expectedCmd.price.get.toString,
+        "mileage" -> expectedCmd.mileage.get.toString,
+        "firstRegisteration" -> expectedCmd.firstRegisteration.get.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+      )).get
+
+      cmd mustEqual expectedCmd
     }
   }
 }
