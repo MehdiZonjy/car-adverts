@@ -60,4 +60,7 @@ class CarAdvertsService @Inject()(carAdvertsRepository: CarAdvertsRepository){
     updatedAdvert.value
   }
 
+
+  def delete(id: String): IO[Boolean] = carAdvertsRepository.delete(id)
+
 }

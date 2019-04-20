@@ -81,4 +81,13 @@ class CarAdvertsController @Inject()(cc: ControllerComponents, carAdvertsService
         cmd => update(cmd)
       )
   }
+
+  def delete(id: String) = Action {
+    carAdvertsService.delete(id).attempt.unsafeRunSync match {
+      case Left(err) => logger.error("Failed to delete CarAdvert", err)
+                        ServiceUnavailable
+      case Right(true) => NoContent
+      case Right(false) => NotFound
+    }
+  }
 }

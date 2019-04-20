@@ -46,6 +46,8 @@ trait CarAdvertsRepository {
 
   def create(carAdvert: CarAdvert): IO[Option[CarAdvert]]
   def update(carAdvert: CarAdvert): IO[Option[CarAdvert]]
+
+  def delete(id: String): IO[Boolean]
 }
 
 
@@ -62,6 +64,7 @@ object Utils {
 
 @Singleton
 class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: String, key: String, secret: String) extends CarAdvertsRepository {
+
   import org.scanamo.auto._
 
   val logger = Logger("DynamodbCarAdvertsRepository")
@@ -72,7 +75,7 @@ class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: Strin
     .withClientConfiguration(
       new ClientConfiguration()
         .withMaxErrorRetry(0)
-        .withConnectionTimeout(3000))    .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(hostEndpoint, region))
+        .withConnectionTimeout(3000)).withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(hostEndpoint, region))
     .withCredentials(creds).build()
   val table = Table[CarAdvertEntity]("carAdverts")
 
@@ -86,15 +89,14 @@ class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: Strin
   def unwrapOption[T](wrapper: Option[Either[DynamoReadError, T]]): Option[T] = wrapper.flatMap {
     case Right(t) => Some(t)
     case Left(err) => logger.warn("Failed to parse Rec from db" + err)
-                      None
+      None
   }
 
   def unwrapEither[T](eth: Either[ScanamoError, T]): Option[T] = eth match {
     case Right(t) => Some(t)
     case Left(err) => logger.error("ScanamoError" + err)
-                      None
+      None
   }
-
 
 
   override def list() = IO.fromFuture(IO.pure {
@@ -105,7 +107,7 @@ class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: Strin
     ScanamoAsync.exec(client)(ops)
   })
 
-  override def get(id: String): IO[Option[CarAdvert]] = IO.fromFuture(IO.pure{
+  override def get(id: String): IO[Option[CarAdvert]] = IO.fromFuture(IO.pure {
     val ops = for {
       advert <- table.get('id -> id)
     } yield unwrapOption(advert).flatMap(CarAdvertEntity.toCarAdvert)
@@ -121,7 +123,7 @@ class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: Strin
     ScanamoAsync.exec(client)(ops)
   })
 
-  override def update(carAdvert: CarAdvert) = IO.fromFuture(IO.pure{
+  override def update(carAdvert: CarAdvert) = IO.fromFuture(IO.pure {
     val entity = CarAdvertEntity.fromCarAdvert(carAdvert)
     val ops = for {
       res <- table.given(attributeExists('id)).update('id -> entity.id,
@@ -130,7 +132,15 @@ class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: Strin
         set('price -> entity.price) and
         set('mileage -> entity.mileage) and
         set('firstRegisteration -> entity.firstRegisteration))
-    }yield unwrapEither(res).flatMap(CarAdvertEntity.toCarAdvert)
+    } yield unwrapEither(res).flatMap(CarAdvertEntity.toCarAdvert)
+    ScanamoAsync.exec(client)(ops)
+  })
+
+
+  override def delete(id: String): IO[Boolean] = IO.fromFuture(IO.pure {
+    val ops = for {
+      d <- table.given(attributeExists('id)).delete('id -> id)
+    } yield d.toOption.fold(false)(utils.misc.cons(true))
     ScanamoAsync.exec(client)(ops)
   })
 }
@@ -154,10 +164,8 @@ class InMemoryCarAdvertsRepository @Inject()()(implicit ex: ExecutionContext) ex
     storage.put(id, car)
   }
 
-  //
-  //  override def delete(id: String): Future[Boolean] = ???
-  //
-  //  override def update(carAdvert: CarAdvert): Future[CarAdvert] = ???
   override def update(carAdvert: CarAdvert): IO[Option[CarAdvert]] = ???
+
+  override def delete(id: String): IO[Boolean] = ???
 }
 
