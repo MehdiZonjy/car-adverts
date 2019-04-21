@@ -1,0 +1,17 @@
+version: '3'
+services:
+  dynamo:
+    image: amazon/dynamodb-local:1.11.477
+    ports:
+      - 8000:8000
+  tests:
+    build:
+      context: .
+      dockerfile: app.Dockerfile
+    depends_on:
+      - dynamo
+    environment:
+      AWS_DYNAMO_URL: http://dynamo:8000
+    entrypoint:
+      - sbt
+      - test
