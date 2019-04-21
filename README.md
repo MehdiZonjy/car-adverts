@@ -10,7 +10,7 @@ both scripts will attempt to build the corresponding `docker-compose` stacks.
 In order to speedup the build process i've created a baseimage [`mehdizonjy/ivy2-cache`](https://cloud.docker.com/repository/docker/mehdizonjy/ivy2-cache) containing the `~/.ivy2` cache that sbt can reuse.
 
 
-*If you want to run the service locally without Docker, make sure dynamodb local is running on port `8000` with `-sharedDb` flag*
+*If you want to run the service locally without Docker, make sure dynamodb local is running on port `8000` with `-sharedDb` flag. Also be sure to [create Dynamodb Table](https://github.com/MehdiZonjy/car-adverts/blob/3384bac4a8267ce90f11893a338a120d37a06781/bootstrap-app.sh#L17)*
 
 ## Design Decisions
 ### Domain
