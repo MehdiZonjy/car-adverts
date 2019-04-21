@@ -33,9 +33,8 @@ object Fuel {
 }
 
 sealed trait CarAdvert
-// 1: is there a cleaner way to declare an enum without using Fuel.Fuel ??
-// 2: one could debate that both cass classes could be merged into one while using Option for optional values
-// , however it would be difficult to express that newcars lack the optional values while usedcards don't.
+// one could debate that both cass classes could be merged into one while using Option for optional values,
+// however it would be difficult to express that newcars lack the optional values while usedcards don't.
 // I find that using an explicit ADT(CarAdvert) with a sum type helps in expressing the domain model via the type system better
 case class NewCarAdvert(id: String, title: String, fuel: Fuel, price: Int) extends  CarAdvert
 

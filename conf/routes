@@ -1,4 +1,4 @@
-GET         /v1/hello  controllers.CarAdvertsController.hello()
+GET         /hello  controllers.CarAdvertsController.hello()
 GET         /v1/caradverts controllers.CarAdvertsController.list(orderBy: String ?="id")
 POST        /v1/caradverts/new controllers.CarAdvertsController.createNewAdvert()
 POST        /v1/caradverts/used controllers.CarAdvertsController.createUsedAdvert()

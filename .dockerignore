@@ -24,3 +24,4 @@ ivy-base-image
 .github
 *.Dockerfile
 docker-compose*
+README.md

@@ -1,73 +1,83 @@
-# Play REST API
+# Car Adverts REST service
+## Running the Demo
+make sure you have docker and docker-compose installed on your system.
 
-[![Build Status](https://travis-ci.org/playframework/play-scala-rest-api-example.svg?branch=2.6.x)](https://travis-ci.org/playframework/play-scala-rest-api-example)
+ - *Tests* `./run-tests.sh`
+ - *App* `./run-app.sh`
+ 
+both scripts will attempt to build the corresponding `docker-compose` stacks.
 
-This is the example project for [Making a REST API in Play](http://developer.lightbend.com/guides/play-rest-api/index.html).
+In order to speedup the build process i've created a baseimage `mehdizonjy/ivy2-cache` containing the `~/.ivy2` cache that sbt can reuse.
 
-## Appendix
 
-### Running
+*If you want to run the service locally without Docker, make sure dynamodb local is running on port `8000`*
 
-You need to download and install sbt for this application to run.
+## Design Decisions
+###Domain
+I've attempted to create a domain model using ADTs.
+There are two distinct entities in the domain. `NewCarAdvert` and `UsedCarAdvert`. [CarAdvert](https://github.com/MehdiZonjy/car-adverts/blob/master/app/models/CarAdvert.scala#L35) is a sum of both entites `app/models`.
 
-Once you have sbt installed, the following at the command prompt will start up Play in development mode:
+One could argue that both case classes could be merged into one. However by explicitly declaring types
+for each type of `car advert` we can express bossiness rules using the type system such as `NewCarAdverts` don't have a mileage field while it's required for `UsedCarAdvert`
 
-```bash
-sbt run
+###Cats
+This is my first time using `cats` and I need to spend more time to get the hang of it, but i love it so far.
+
+[IO](https://typelevel.org/cats-effect/datatypes/io.html) simplified working with code that has side-effects (such as CarAdvertsRepository) which could fail unpredictably (dynamodb provisioned capacity excceded) and helped with handling sync/async code.
+
+[OptionT Monad Transformer](https://typelevel.org/cats/datatypes/optiont.html) has helped me simplify working with nested monads as in [Here](https://github.com/MehdiZonjy/car-adverts/blob/f0769bd7549e9f289a2a9a6d2e5f08b2f6277bb1/app/services/CarAdvertsService.scala#L129)
+
+
+
+
+## Limitations
+- The current design doesn't allow changing `NewCarAdvert` to a `UsedCarAdvert`
+- `Scan` doesn't return all the items in DynamoDB and pagination needs to be implemented to handle it.
+- Scan on a dyanmodb table is inefficient and expensive. If usecases require ordering, filtering and complex queries perhabs Dynamodb isn't the best tool to use.
+- The current Sorting implementation happens on the App level which isn't ideal for production. 
+- It might be worth using `Action.async` in the controller handlers.
+## Endpoint
+##### GET /v1/caradverts?orderBy=id
+returns list of `CarAdverts`.
+`orderBy` is optional and can be one of (`id`,`title`, `fuel`, `mileage`, `firstRegistration`)
+##### GET /v1/caradverts/:id
+return signle `CarAdvert` by id
+##### POST /v1/caradverts/new
+Creates a new `NewCarAdvert`. 
+
+Payload
+```
+{
+  "title": "STRING",
+  "fuel": "gasoline|diesel",
+  "price": NUMBER,
+}
+```
+##### POST /v1/caradverts/used
+Creates a  `UsedCarAdvert`. 
+
+Payload
+```
+{
+  "title": "STRING",
+  "fuel": "gasoline|diesel",
+  "price": NUMBER,
+  "mileage": NUMBER,
+  "firstRegistration": "yyyy-MM-dd"
+}
+```
+##### PUT /v1/caradverts/:id
+Updates an existing `CarAdvert`. 
+
+Payload (all fields are optional):
+```
+  "title": "STRING",
+  "fuel": "gasoline|diesel",
+  "price": NUMBER,
+  "mileage": NUMBER,
+  "firstRegistration": "yyyy-MM-dd"
 ```
 
-Play will start up on the HTTP port at <http://localhost:9000/>.   You don't need to deploy or reload anything -- changing any source code while the server is running will automatically recompile and hot-reload the application on the next HTTP request. 
+##### DELETE /v1/caradverts/:id
+Delete a `CarAdvert` by Id
 
-### Usage
-
-If you call the same URL from the command line, you’ll see JSON. Using httpie, we can execute the command:
-
-```bash
-http --verbose http://localhost:9000/v1/posts
-```
-
-and get back:
-
-```routes
-GET /v1/posts HTTP/1.1
-```
-
-Likewise, you can also send a POST directly as JSON:
-
-```bash
-http --verbose POST http://localhost:9000/v1/posts title="hello" body="world"
-```
-
-and get:
-
-```routes
-POST /v1/posts HTTP/1.1
-```
-
-### Load Testing
-
-The best way to see what Play can do is to run a load test.  We've included Gatling in this test project for integrated load testing.
-
-Start Play in production mode, by [staging the application](https://www.playframework.com/documentation/2.5.x/Deploying) and running the play script:s
-
-```bash
-sbt stage
-cd target/universal/stage
-./bin/play-scala-rest-api-example -Dplay.http.secret.key=some-long-key-that-will-be-used-by-your-application
-```
-
-Then you'll start the Gatling load test up (it's already integrated into the project):
-
-```bash
-sbt gatling:test
-```
-
-For best results, start the gatling load test up on another machine so you do not have contending resources.  You can edit the [Gatling simulation](http://gatling.io/docs/2.2.2/general/simulation_structure.html#simulation-structure), and change the numbers as appropriate.
-
-Once the test completes, you'll see an HTML file containing the load test chart:
-
-```bash
- ./rest-api/target/gatling/gatlingspec-1472579540405/index.html
-```
-
-That will contain your load test results.

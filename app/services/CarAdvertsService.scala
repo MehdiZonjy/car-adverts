@@ -22,6 +22,7 @@ trait CarAdvertOrderBy {
   def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean
 }
 object CarAdvertOrderBy {
+  // This is really ugly and unmaintainable.  Also ideally sorting should be performed by the db if possible
   object Id extends CarAdvertOrderBy{
     override def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean = (a1,a2) match {
       case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.id.compareToIgnoreCase(a2.id) <= 0
