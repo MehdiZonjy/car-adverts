@@ -3,11 +3,11 @@
 make sure you have docker and docker-compose installed on your system.
 
  - *Tests* `./run-tests.sh`
- - *App* `./run-app.sh`
+ - *App* `./run-app.sh` (the service should be accessible on `http://localhost:9000/hello`)
  
 both scripts will attempt to build the corresponding `docker-compose` stacks.
 
-In order to speedup the build process i've created a baseimage `mehdizonjy/ivy2-cache` containing the `~/.ivy2` cache that sbt can reuse.
+In order to speedup the build process i've created a baseimage [`mehdizonjy/ivy2-cache`](https://cloud.docker.com/repository/docker/mehdizonjy/ivy2-cache) containing the `~/.ivy2` cache that sbt can reuse.
 
 
 *If you want to run the service locally without Docker, make sure dynamodb local is running on port `8000` with `-sharedDb` flag*
