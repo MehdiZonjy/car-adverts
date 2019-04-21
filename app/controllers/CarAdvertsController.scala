@@ -27,7 +27,6 @@ class CarAdvertsController @Inject()(cc: ControllerComponents, carAdvertsService
 
   def createNewAdvert = Action {
     implicit request =>
-
     def execCmd(cmd: CreateNewCarAdvert) = carAdvertsService.create(cmd).attempt.unsafeRunSync match {
       case Right(Some(advert)) => Created(Json.toJson(advert))
       case Right(None) => Conflict("Unable to create NewCarAdvert due to id collision, try again")

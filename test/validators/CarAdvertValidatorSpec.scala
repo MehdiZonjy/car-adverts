@@ -45,7 +45,7 @@ class CarAdvertValidatorSpec extends PlaySpec{
       usedCarAdvertForm.bind(Map("mileage" -> "Random")).error("mileage").isDefined mustBe true
     }
     "Fail when firstRegisteration is not valid date format yyyy-MM-dd" in {
-      usedCarAdvertForm.bind(Map("firstRegisteration" -> "07-09-1990")).error("firstRegisteration").isDefined mustBe true
+      usedCarAdvertForm.bind(Map("firstRegistration" -> "07-09-1990")).error("firstRegistration").isDefined mustBe true
     }
     "Create a valid CreateUsedCarAdvert" in {
       val expectedCmd = CreateUsedCarAdvert("advert title", Fuel.Diesel, 90, 1000, LocalDate.now())
@@ -54,7 +54,7 @@ class CarAdvertValidatorSpec extends PlaySpec{
         "title" -> expectedCmd.title,
         "fuel" -> expectedCmd.fuel.value,
         "mileage" -> expectedCmd.mileage.toString,
-        "firstRegisteration" -> utils.Date.dateToStr(expectedCmd.firstRegistration)
+        "firstRegistration" -> utils.Date.dateToStr(expectedCmd.firstRegistration)
       )).get
 
       createUsedCarAdvert mustEqual expectedCmd
@@ -66,7 +66,7 @@ class CarAdvertValidatorSpec extends PlaySpec{
       updateCarAdvertForm.bind(Map("price" -> "Hello World")).error("price").isDefined mustBe true
     }
     "Fail when firstRegisteration format is not correct" in {
-      updateCarAdvertForm.bind(Map("firstRegisteration" -> "random")).error("firstRegisteration").isDefined mustBe true
+      updateCarAdvertForm.bind(Map("firstRegistration" -> "random")).error("firstRegistration").isDefined mustBe true
     }
     "Fail when fuel type is not correct" in {
       updateCarAdvertForm.bind(Map("fuel" -> "random")).error("fuel").isDefined mustBe true
@@ -82,7 +82,7 @@ class CarAdvertValidatorSpec extends PlaySpec{
         "fuel" -> expectedCmd.fuel.get.value,
         "price" -> expectedCmd.price.get.toString,
         "mileage" -> expectedCmd.mileage.get.toString,
-        "firstRegisteration" -> utils.Date.dateToStr(expectedCmd.firstRegistration.get)
+        "firstRegistration" -> utils.Date.dateToStr(expectedCmd.firstRegistration.get)
       )).get
 
       cmd mustEqual expectedCmd

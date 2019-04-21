@@ -63,7 +63,7 @@ object Utils {
 }
 
 @Singleton
-class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: String, key: String, secret: String) extends CarAdvertsRepository {
+class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: String, key: String, secret: String, tableName: String) extends CarAdvertsRepository {
 
   import org.scanamo.auto._
 
@@ -77,7 +77,7 @@ class DynamodbCarAdvertsRepository @Inject()(region: String, hostEndpoint: Strin
         .withMaxErrorRetry(0)
         .withConnectionTimeout(3000)).withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(hostEndpoint, region))
     .withCredentials(creds).build()
-  val table = Table[CarAdvertEntity]("carAdverts")
+  val table = Table[CarAdvertEntity](tableName)
 
 
   def unwrapEithers[T](iter: List[Either[DynamoReadError, T]]): List[T] = iter.foldRight(List[T]())((either, acc) => either match {

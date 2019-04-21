@@ -15,6 +15,11 @@ class Module(environment: Environment, configuration: Configuration)
 
   override def configure() = {
 //    bind[CarAdvertsRepository].to[InMemoryCarAdvertsRepository].in[Singleton]
-    bind[CarAdvertsRepository].toInstance(new DynamodbCarAdvertsRepository("us-east-1","http://localhost:8000","key","secret"))
+    val accessKey = configuration.get[String]("aws.key")
+    val secret = configuration.get[String]("aws.secret")
+    val region = configuration.get[String]("aws.region")
+    val dynamoEndpoint = configuration.get[String]("aws.dynamoUrl")
+    val tableName = configuration.get[String]("tables.car-adverts")
+    bind[CarAdvertsRepository].toInstance(new DynamodbCarAdvertsRepository(region,dynamoEndpoint, accessKey, secret, tableName))
   }
 }

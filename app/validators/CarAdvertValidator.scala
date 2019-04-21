@@ -35,7 +35,7 @@ object CarAdvertValidator {
         "fuel" -> of[Fuel],
         "price" -> number(min = 1),
         "mileage" -> number,
-        "firstRegisteration" -> localDate("yyyy-MM-dd")
+        "firstRegistration" -> localDate("yyyy-MM-dd")
       )(CreateUsedCarAdvert.apply)(CreateUsedCarAdvert.unapply)
     )
   }
@@ -48,7 +48,7 @@ object CarAdvertValidator {
         "fuel" -> optional(of[Fuel]),
         "price" -> optional(number(min = 1)),
         "mileage" -> optional(number),
-        "firstRegisteration" -> optional(localDate("yyyy-MM-dd"))
+        "firstRegistration" -> optional(localDate("yyyy-MM-dd"))
       )(UpdateCarAdvert.apply)(UpdateCarAdvert.unapply))
   }
 }
