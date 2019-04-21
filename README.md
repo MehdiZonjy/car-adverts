@@ -10,7 +10,7 @@ both scripts will attempt to build the corresponding `docker-compose` stacks.
 In order to speedup the build process i've created a baseimage `mehdizonjy/ivy2-cache` containing the `~/.ivy2` cache that sbt can reuse.
 
 
-*If you want to run the service locally without Docker, make sure dynamodb local is running on port `8000`*
+*If you want to run the service locally without Docker, make sure dynamodb local is running on port `8000` with `-sharedDb` flag*
 
 ## Design Decisions
 ### Domain
@@ -28,6 +28,7 @@ This is my first time using `cats` and I need to spend more time to get the hang
 [OptionT Monad Transformer](https://typelevel.org/cats/datatypes/optiont.html) has helped me simplify working with nested monads as in [Here](https://github.com/MehdiZonjy/car-adverts/blob/f0769bd7549e9f289a2a9a6d2e5f08b2f6277bb1/app/services/CarAdvertsService.scala#L129)
 
 
+I'm still unsure about the error handling in Scala. It's seems there are many ways to handling exception `Try`, `Either` and now `IO`. I need to do more digging and research on this topic
 
 
 ## Limitations
