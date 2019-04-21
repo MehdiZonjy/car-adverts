@@ -293,7 +293,7 @@ class CarAdvertsRouterSpec
       status(response) should equal(Status.OK)
 
       val ads: List[CarAdvert] = Json.fromJson[List[CarAdvert]](contentAsJson(response)).get
-      val sortedAds = if(ad1.id.compareTo(ad2.id) <0)
+      val sortedAds = if(ad1.id.compareTo(ad2.id) <= 0)
           List[CarAdvert](ad1, ad2)
       else
         List[CarAdvert](ad2, ad1)
@@ -311,7 +311,7 @@ class CarAdvertsRouterSpec
       val ad1 = Json.fromJson[NewCarAdvert](contentAsJson(addCarAdvert(payload1))).get
       val ad2 = Json.fromJson[UsedCarAdvert](contentAsJson(addCarAdvert(payload2))).get
 
-      val request = FakeRequest(GET, "/v1/caradverts").withHeaders(HOST -> "localhost:9000")
+      val request = FakeRequest(GET, "/v1/caradverts?orderBy=title").withHeaders(HOST -> "localhost:9000")
       val response: Future[Result] = route(app, request).get
 
       status(response) should equal(Status.OK)

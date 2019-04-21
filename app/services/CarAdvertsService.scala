@@ -24,27 +24,27 @@ trait CarAdvertOrderBy {
 object CarAdvertOrderBy {
   object Id extends CarAdvertOrderBy{
     override def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean = (a1,a2) match {
-      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.id < a2.id
-      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.id < a2.id
-      case (a1: NewCarAdvert, a2: UsedCarAdvert) => a1.id < a2.id
-      case (a1: UsedCarAdvert, a2: NewCarAdvert) => a1.id < a2.id
+      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.id.compareToIgnoreCase(a2.id) <= 0
+      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.id.compareToIgnoreCase(a2.id) <= 0
+      case (a1: NewCarAdvert, a2: UsedCarAdvert) => a1.id.compareToIgnoreCase(a2.id) <= 0
+      case (a1: UsedCarAdvert, a2: NewCarAdvert) => a1.id.compareToIgnoreCase(a2.id) <= 0
     }
   }
 
   object Title extends CarAdvertOrderBy {
     override def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean = (a1, a2) match {
-      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.title < a2.title
-      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.title < a2.title
-      case (a1: NewCarAdvert, a2: UsedCarAdvert) => a1.title < a2.title
-      case (a1: UsedCarAdvert, a2: NewCarAdvert) => a1.title < a2.title
+      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.title.compareToIgnoreCase( a2.title)<=0
+      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.title.compareToIgnoreCase( a2.title)<=0
+      case (a1: NewCarAdvert, a2: UsedCarAdvert) => a1.title.compareToIgnoreCase( a2.title)<=0
+      case (a1: UsedCarAdvert, a2: NewCarAdvert) => a1.title.compareToIgnoreCase( a2.title)<=0
     }
   }
   object Fuel extends CarAdvertOrderBy {
     override def lessThan(a1: CarAdvert, a2: CarAdvert): Boolean = (a1, a2) match {
-      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.fuel.value < a2.fuel.value
-      case (a1: UsedCarAdvert, a2: UsedCarAdvert) => a1.fuel.value < a2.fuel.value
-      case (a1: NewCarAdvert, a2: UsedCarAdvert) => a1.fuel.value < a2.fuel.value
-      case (a1: UsedCarAdvert, a2: NewCarAdvert) => a1.fuel.value < a2.fuel.value
+      case (a1: NewCarAdvert, a2: NewCarAdvert) => a1.fuel.value.compareToIgnoreCase(a2.fuel.value) <=0
+      case (a1: UsedCarAdvert, a2: UsedCarAdvert) =>a1.fuel.value.compareToIgnoreCase(a2.fuel.value) <=0
+      case (a1: NewCarAdvert, a2: UsedCarAdvert) => a1.fuel.value.compareToIgnoreCase(a2.fuel.value) <=0
+      case (a1: UsedCarAdvert, a2: NewCarAdvert) => a1.fuel.value.compareToIgnoreCase(a2.fuel.value) <=0
     }
   }
   object Price extends CarAdvertOrderBy {
