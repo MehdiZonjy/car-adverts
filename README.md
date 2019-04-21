@@ -13,14 +13,14 @@ In order to speedup the build process i've created a baseimage `mehdizonjy/ivy2-
 *If you want to run the service locally without Docker, make sure dynamodb local is running on port `8000`*
 
 ## Design Decisions
-###Domain
+### Domain
 I've attempted to create a domain model using ADTs.
 There are two distinct entities in the domain. `NewCarAdvert` and `UsedCarAdvert`. [CarAdvert](https://github.com/MehdiZonjy/car-adverts/blob/master/app/models/CarAdvert.scala#L35) is a sum of both entites `app/models`.
 
 One could argue that both case classes could be merged into one. However by explicitly declaring types
 for each type of `car advert` we can express bossiness rules using the type system such as `NewCarAdverts` don't have a mileage field while it's required for `UsedCarAdvert`
 
-###Cats
+### Cats
 This is my first time using `cats` and I need to spend more time to get the hang of it, but i love it so far.
 
 [IO](https://typelevel.org/cats-effect/datatypes/io.html) simplified working with code that has side-effects (such as CarAdvertsRepository) which could fail unpredictably (dynamodb provisioned capacity excceded) and helped with handling sync/async code.
